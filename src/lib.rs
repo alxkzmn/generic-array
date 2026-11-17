@@ -387,7 +387,12 @@ where
             {
                 let (destination_iter, position) = destination.iter_position();
 
-                destination_iter.enumerate().for_each(|(i, dst)| {
+                // Aeneas stops translation when implicit capture puts position's
+                // mutable reference behind another mutable reference. Move it
+                // directly into the callback; borrow f first to keep ownership
+                // of the generator here.
+                let f = &mut f;
+                destination_iter.enumerate().for_each(move |(i, dst)| {
                     ptr::write(dst, f(i));
 
                     *position += 1;
